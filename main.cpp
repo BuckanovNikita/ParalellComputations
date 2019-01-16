@@ -11,6 +11,8 @@
 #include "task.h"
 #include "scheme.h"
 #include "test.h"
+#include "solver.h"
+#include <functional>
 
 #define PRECISION 1e-8
 #define INFO
@@ -43,15 +45,10 @@ int main(int argc, char **argv) {
         return -1;
     }
 
-    auto &logfile = (ofstream&)cout;
     size_t it = 0;
     const double a = 0;
     const double h = 1.0 / N;
 
-    if (argc > 4) {
-        logfile = ofstream();
-        logfile.open(argv[4],ios::in);
-    }
 
     cout << "Grid size: " << N << endl;
 
@@ -72,13 +69,13 @@ int main(int argc, char **argv) {
     for (it = 0; it < max_iter; it++) {
 
 #ifdef TEST
-        DiagonalMajority(N, a, h, tau, (char*)"Matrix is diagonal majority\n", logfile);
-        BorderEqualityTest(U, U_1, N, a, h, (char*)"Border is correct\n", logfile);
+        DiagonalMajority(N, a, h, tau);
+        BorderEqualityTest(U, U_1, N, a, h);
 #endif
 
         for (size_t j = 1; j < N; j++) {
 
-            s[0] = C_(0, N, a, h, tau) / B_(0, N, a, h, tau);
+            /*s[0] = C_(0, N, a, h, tau) / B_(0, N, a, h, tau);
             t[0] = -F_(U, 0, j, N, a, h, tau) / B_(0, N, a, h, tau);
             for (size_t i = 1; i <= N; i++) {
                 s[i] = C_(i, N, a, h, tau) / (B_(i, N, a, h, tau) - A_(i, N, a, h, tau) * s[i - 1]);
@@ -89,21 +86,32 @@ int main(int argc, char **argv) {
             for (size_t i = N - 1; i > 0; i--) {
                 U_1[i][j] = U_1[i + 1][j] * s[i] + t[i];
             }
-            U_1[0][j] = U_1[1][j] * s[0] + t[0];
+            U_1[0][j] = U_1[1][j] * s[0] + t[0];*/
+
+            vector<double> tmp = SequentialThomasSolver(N,
+                    [=] (size_t i) { return A_(i, N, a, h, tau); },
+                    [=] (size_t i) { return B_(i, N, a, h, tau); },
+                    [=] (size_t i) { return C_(i, N, a, h, tau); },
+                    [&U, j, N, a, h, tau] (size_t i){ return F_(U, i, j,  N, a, h, tau); });
+
+            for(int i=0; i<=N; i++)
+            {
+                U_1[i][j] = tmp[i];
+            }
         }
 
 #ifdef TEST
-        SolutionTest_I(U, U_1, N, a, h, tau, (char*)"Progonka by columns is correct", logfile);
+        SolutionTest_I(U, U_1, N, a, h, tau);
 #endif
         swap(U, U_1);
 
 #ifdef TEST
-        DiagonalMajority(N, a, h, tau, (char*)"Matrix is diagonal majority", logfile);
-        BorderEqualityTest(U, U_1, N, a, h,(char*)"Border is correct", logfile);
+        DiagonalMajority(N, a, h, tau);
+        BorderEqualityTest(U, U_1, N, a, h);
 #endif
 
 #ifdef INFO
-        PrecisionInfo(U, U_1, a, h, it, N, (char*)"\nIteration: I", (char*)"max error \nmax_i  max_j ", logfile);
+        PrecisionInfo(U, U_1, a, h, it, N);
 #endif
 
         for (size_t i = 1; i < N; i++) {
@@ -122,13 +130,13 @@ int main(int argc, char **argv) {
             U_1[i][0] =  U_1[i][1] * s[0] + t[0];
         }
 #ifdef TEST
-        SolutionTest_J(U, U_1, N, a, h, tau, (char*)"Progonka by rows is correct", logfile);
+        SolutionTest_J(U, U_1, N, a, h, tau);
 #endif
 
         swap(U, U_1);
 
 #ifdef INFO
-        PrecisionInfo(U, U_1, a, h, it, N, (char*)"Iteration: J", (char*)"max error \nmax_i %d max_j %d", logfile);
+        PrecisionInfo(U, U_1, a, h, it, N);
 #endif
     }
     return 0;

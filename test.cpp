@@ -6,16 +6,14 @@
 #include "test.h"
 #define PRECISION 1e-8
 
-void DiagonalMajority(size_t N, double a, double h, double tau, char *msg, ofstream &output)
+void DiagonalMajority(size_t N, double a, double h, double tau)
 {
     size_t i;
     for(i=0; i<=N; i++)
         assert(fabs(A_(i, N, a, h, tau) + C_(i, N, a, h, tau)) <= fabs(B_(i, N, a, h, tau)));
-    output << msg <<endl;
 }
 
-void SolutionTest_I(vector<vector<double>> &U, vector<vector<double>> &U_1, size_t N, double a, double h, double tau,
-                    char *msg, ofstream &output)
+void SolutionTest_I(vector<vector<double>> &U, vector<vector<double>> &U_1, size_t N, double a, double h, double tau)
 {
     size_t j, i;
     for(j=1; j<N; j++){
@@ -36,11 +34,9 @@ void SolutionTest_I(vector<vector<double>> &U, vector<vector<double>> &U_1, size
                     F_(U, i, j, N, a, h, tau)) < PRECISION);
         }
     }
-    output << msg <<endl;
 }
 
-void SolutionTest_J(vector<vector<double>> &U, vector<vector<double>> &U_1, size_t N, double a, double h, double tau,
-                    char *msg, ofstream &output)
+void SolutionTest_J(vector<vector<double>> &U, vector<vector<double>> &U_1, size_t N, double a, double h, double tau)
 {
     size_t i, j;
     for (i=1; i<N;i++)
@@ -57,11 +53,9 @@ void SolutionTest_J(vector<vector<double>> &U, vector<vector<double>> &U_1, size
         }
 
     }
-    output << msg <<endl;
 }
 
-void BorderEqualityTest(vector<vector<double>> &U, vector<vector<double>> &U_1, size_t N, double a, double h, char *msg,
-                        ofstream &output) {
+void BorderEqualityTest(vector<vector<double>> &U, vector<vector<double>> &U_1, size_t N, double a, double h) {
     size_t i;
     for(i=0; i<=N; i++)
     {
@@ -70,13 +64,10 @@ void BorderEqualityTest(vector<vector<double>> &U, vector<vector<double>> &U_1, 
         assert(U[i][N] == u_x_1_1(a + h*i));
         assert(U_1[i][N] == u_x_1_1(a + h*i));
     }
-    output << msg <<endl;
 }
 
-void PrecisionInfo(vector<vector<double>> &U, vector<vector<double>> &U_1, double a, double h, size_t it, size_t N,
-                   char *fmt1, char *fmt2, ofstream &output)
+void PrecisionInfo(vector<vector<double>> &U, vector<vector<double>> &U_1, double a, double h, size_t it, size_t N)
 {
-    output << fmt1 << " " << it << endl;
     int i = 0;
     int j = 0;
     int max_i = 0;
@@ -95,5 +86,4 @@ void PrecisionInfo(vector<vector<double>> &U, vector<vector<double>> &U_1, doubl
             }
         }
     }
-    output << fmt2 <<" "<<diff<<" "<< max_i<<" " << max_j << endl;
 }

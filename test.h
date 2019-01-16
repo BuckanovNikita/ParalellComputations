@@ -16,14 +16,10 @@
 
 using namespace std;
 
-void DiagonalMajority(size_t N, double a, double h, double tau, char *msg, ofstream &output);
-void SolutionTest_I(vector<vector<double>> &U, vector<vector<double>> &U_1, size_t N, double a, double h, double tau,
-                    char *msg, ofstream &output);
-void SolutionTest_J(vector<vector<double>> &U, vector<vector<double>> &U_1, size_t N, double a, double h, double tau,
-                    char *msg, ofstream &output);
-void BorderEqualityTest(vector<vector<double>> &U, vector<vector<double>> &U_1, size_t N, double a, double h, char *msg,
-                        ofstream &output);
-void PrecisionInfo(vector<vector<double>> &U, vector<vector<double>> &U_1, double a, double h, size_t it, size_t N,
-                   char *fmt1, char *fmt2, ofstream &output);
+void DiagonalMajority(size_t N, double a, double h, double tau);
+void SolutionTest_I(vector<vector<double>> &U, vector<vector<double>> &U_1, size_t N, double a, double h, double tau);
+void SolutionTest_J(vector<vector<double>> &U, vector<vector<double>> &U_1, size_t N, double a, double h, double tau);
+void BorderEqualityTest(vector<vector<double>> &U, vector<vector<double>> &U_1, size_t N, double a, double h);
+void PrecisionInfo(vector<vector<double>> &U, vector<vector<double>> &U_1, double a, double h, size_t it, size_t N);
 
 #endif //IMM_CPP_TEST_H
