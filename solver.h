@@ -8,9 +8,11 @@
 #include <vector>
 #include <functional>
 using namespace std;
-vector<double> SequentialThomasSolver(const size_t& N, std::function<double(size_t)> A,
-                                      std::function<double(size_t)> B,
-                                      std::function<double(size_t)> C,
-                                      std::function<double(size_t)> F);
+
+vector<double> SequentialThomasSolver(const size_t &N,
+        const function<double(size_t)> &A,
+        const function<double(size_t)> &B,
+        const function<double(size_t)> &C,
+        const function<double(size_t)> &F);
 
 #endif //IMM_CPP_SOLVER_H

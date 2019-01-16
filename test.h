@@ -9,17 +9,29 @@
 #include "test.h"
 #include "task.h"
 #include "scheme.h"
-#include <stddef.h>
-#include <assert.h>
-#include <stdio.h>
-#include <math.h>
+#include <cassert>
+#include <iostream>
+#include <cstdio>
+#include <cmath>
+#include <functional>
 
 using namespace std;
 
-void DiagonalMajority(size_t N, double a, double h, double tau);
-void SolutionTest_I(vector<vector<double>> &U, vector<vector<double>> &U_1, size_t N, double a, double h, double tau);
-void SolutionTest_J(vector<vector<double>> &U, vector<vector<double>> &U_1, size_t N, double a, double h, double tau);
+void ThomasSolutionTest(vector<double> &U,
+                        const size_t &N,
+                        const function<double(size_t)> &A,
+                        const function<double(size_t)> &B,
+                        const function<double(size_t)> &C,
+                        const function<double(size_t)> &F);
+
+void DiagonalDominance(const size_t &N,
+                      const function<double(size_t)> &A,
+                      const function<double(size_t)> &B,
+                      const function<double(size_t)> &C,
+                      const function<double(size_t)> &F);
+
 void BorderEqualityTest(vector<vector<double>> &U, vector<vector<double>> &U_1, size_t N, double a, double h);
-void PrecisionInfo(vector<vector<double>> &U, vector<vector<double>> &U_1, double a, double h, size_t it, size_t N);
+
+void PrecisionInfo(vector<vector<double>> &U, vector<vector<double>> &U_1, double a, double h, size_t N);
 
 #endif //IMM_CPP_TEST_H
