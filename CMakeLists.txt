@@ -1,0 +1,6 @@
+cmake_minimum_required(VERSION 3.5.2)
+project(imm_cpp)
+
+set(CMAKE_CXX_STANDARD 11)
+
+add_executable(imm_cpp main.cpp test.cpp test.h task.cpp task.h scheme.cpp scheme.h)
