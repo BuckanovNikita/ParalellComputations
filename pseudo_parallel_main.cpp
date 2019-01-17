@@ -108,7 +108,7 @@ int main(int argc, char **argv) {
                 C_V[np] = vector<double>(r - l + 1);
                 F_V[np] = vector<double>(r - l + 1);
                 L[np] = vector<double>(r - l + 1);
-                R[np] = vector<double>(r - l + 2);
+                R[np] = vector<double>(r - l + 1);
             }
 
             for (size_t np = 0; np < mp; np++) {
@@ -150,22 +150,40 @@ int main(int argc, char **argv) {
                 cout<<"Upper triangle form: OK"<<endl;
 #endif
 
-                R[np][r-l+1] = B_V[np][r-l];
-                R[np][r-l] = C_V[np][r-l-1];
-                for(size_t k= r-l-1; k>0; k--)
+                R[np][r-l-1] = C_V[np][r-l-1];
+
+                for(ssize_t k= r-l-2; k>=0; k--)
                 {
-                    R[np][k] = -C_V[np][k-1]/B_V[np][k]*C_V[np][k];
-                    L[np][k-1] = L[np][k-1]-C_V[np][k-1]/B_V[np][k]*L[np][k];
-                    F_V[np][k-1] =  F_V[np][k-1]-C_V[np][k-1]/B_V[np][k]*F_V[np][k];
+                    R[np][k] = -C_V[np][k]/B_V[np][k+1] * C_V[np][k+1];
+                    L[np][k] -=  C_V[np][k]/B_V[np][k+1] * L[np][k+1];
+                    F_V[np][k] -=  C_V[np][k]/B_V[np][k+1] * F_V[np][k+1];
                 }
 
                 //TODO Обмен коэффиецентами
 
                 if(np!=0)
                 {
-                    B_V[np-1].back() -= C(l-1)/B(l)*L[np][0];
-                    R[np][0] = -C(l-1)/B(l)*R[np][1];
+                     B_V[np-1].back() -= C(l-1)/B(l)*L[np][0];
+                     R[np-1].back() = -C(l-1)/B(l)*R[np][0];
                 }
+#ifdef TEST
+                if( np == 0 )
+                    for(size_t i = 0; i < r-l; i++)
+                    {
+                        double res = fabs(B_V[np][i]*correct[i] + R[np][i]*correct[r] - F_V[np][i]);
+                        assert(res < PRECISION);
+                    }
+                else {
+
+                    for (size_t i = 1; i < r - l; i++) {
+                        double res = abs(L[np][i]*correct[l - 1] + B_V[np][i] * correct[l + i] + R[np][i] * correct[r] - F_V[np][i]);
+                        double a1 = L[np][i]*correct[l - 1] + B_V[np][i] * correct[l + i] + R[np][i] * correct[r];
+                        double a2 = F_V[np][i];
+                        assert(res < PRECISION);
+                    }
+                }
+                cout<<"Parallel form: OK"<<endl;
+#endif
             }
 
             for (size_t np = 0; np < mp; np++) {
