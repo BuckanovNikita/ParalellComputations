@@ -66,19 +66,19 @@ int main(int argc, char **argv) {
         for (size_t j = 1; j < N; j++) {
 #ifdef TEST
             DiagonalDominance(N,
-                    [=](size_t i) { return A_(i, N, a, h, tau); },
-                    [=](size_t i) { return B_(i, N, a, h, tau); },
-                    [=](size_t i) { return C_(i, N, a, h, tau); },
+                    [=](size_t i) { return A_1(i, N, a, h, tau); },
+                    [=](size_t i) { return B_1(i, N, a, h, tau); },
+                    [=](size_t i) { return C_1(i, N, a, h, tau); },
                     [&U, j, N, a, h, tau](size_t i) {
-                        return F_(U, i, j, N, a, h, tau);
+                        return F_1(U, i, j, N, a, h, tau);
                     });
 #endif
             vector<double> tmp = SequentialThomasSolver(N,
-                                                        [=](size_t i) { return A_(i, N, a, h, tau); },
-                                                        [=](size_t i) { return B_(i, N, a, h, tau); },
-                                                        [=](size_t i) { return C_(i, N, a, h, tau); },
+                                                        [=](size_t i) { return A_1(i, N, a, h, tau); },
+                                                        [=](size_t i) { return B_1(i, N, a, h, tau); },
+                                                        [=](size_t i) { return C_1(i, N, a, h, tau); },
                                                         [&U, j, N, a, h, tau](size_t i) {
-                                                            return F_(U, i, j, N, a, h, tau);
+                                                            return F_1(U, i, j, N, a, h, tau);
                                                         });
 
             for (int i = 0; i <= N; i++) {
@@ -86,10 +86,10 @@ int main(int argc, char **argv) {
             }
 #ifdef TEST
             ThomasSolutionTest(tmp, N,
-                               [=](size_t i) { return A_(i, N, a, h, tau); },
-                               [=](size_t i) { return B_(i, N, a, h, tau); },
-                               [=](size_t i) { return C_(i, N, a, h, tau); },
-                               [&U, j, N, a, h, tau](size_t i) { return F_(U, i, j, N, a, h, tau); });
+                               [=](size_t i) { return A_1(i, N, a, h, tau); },
+                               [=](size_t i) { return B_1(i, N, a, h, tau); },
+                               [=](size_t i) { return C_1(i, N, a, h, tau); },
+                               [&U, j, N, a, h, tau](size_t i) { return F_1(U, i, j, N, a, h, tau); });
 #endif
         }
 
@@ -106,29 +106,29 @@ int main(int argc, char **argv) {
         for (size_t j = 1; j < N; j++) {
 #ifdef TEST
             DiagonalDominance(N,
-                             [=](size_t i) { return A1(i, N, a, h, tau); },
-                             [=](size_t i) { return B1(i, N, a, h, tau); },
-                             [=](size_t i) { return C1(i, N, a, h, tau); },
+                             [=](size_t i) { return A_2(i, N, a, h, tau); },
+                             [=](size_t i) { return B_2(i, N, a, h, tau); },
+                             [=](size_t i) { return C_2(i, N, a, h, tau); },
                              [&U, j, N, a, h, tau](size_t i) {
-                                 return F1(U, j, i, N, a, h, tau);
+                                 return F_2(U, j, i, N, a, h, tau);
                              });
 #endif
             vector<double> tmp = SequentialThomasSolver(N,
-                                                        [=](size_t i) { return A1(i, N, a, h, tau); },
-                                                        [=](size_t i) { return B1(i, N, a, h, tau); },
-                                                        [=](size_t i) { return C1(i, N, a, h, tau); },
+                                                        [=](size_t i) { return A_2(i, N, a, h, tau); },
+                                                        [=](size_t i) { return B_2(i, N, a, h, tau); },
+                                                        [=](size_t i) { return C_2(i, N, a, h, tau); },
                                                         [&U, j, N, a, h, tau](size_t i) {
-                                                            return F1(U, j, i, N, a, h, tau);
+                                                            return F_2(U, j, i, N, a, h, tau);
                                                         });
 
             for (int i = 0; i <= N; i++)
                 U_1[j][i] = tmp[i];
 #ifdef TEST
             ThomasSolutionTest(tmp, N,
-                               [=](size_t i) { return A1(i, N, a, h, tau); },
-                               [=](size_t i) { return B1(i, N, a, h, tau); },
-                               [=](size_t i) { return C1(i, N, a, h, tau); },
-                               [&U, j, N, a, h, tau](size_t i) { return F1(U, j, i, N, a, h, tau); });
+                               [=](size_t i) { return A_2(i, N, a, h, tau); },
+                               [=](size_t i) { return B_2(i, N, a, h, tau); },
+                               [=](size_t i) { return C_2(i, N, a, h, tau); },
+                               [&U, j, N, a, h, tau](size_t i) { return F_2(U, j, i, N, a, h, tau); });
 #endif
         }
         swap(U, U_1);

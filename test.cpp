@@ -1,7 +1,3 @@
-//
-// Created by nikita on 15.01.2019.
-//
-
 #include <fstream>
 #include "test.h"
 
@@ -25,8 +21,10 @@ void ThomasSolutionTest(vector<double> &U,
     assert(fabs(-B(0) * U[0] + C(0) * U[1] - F(0)) < PRECISION);
 
     for (size_t i = 1; i < N; i++)
+    {
+        double res = fabs(A(i) * U[i - 1] - B(i) * U[i] + C(i) * U[i + 1] - F(i));
         assert(fabs(A(i) * U[i - 1] - B(i) * U[i] + C(i) * U[i + 1] - F(i)) < PRECISION);
-
+    }
     assert(fabs(A(N) * U[N - 1] - B(N) * U[N] + -F(N)) < PRECISION);
 }
 
