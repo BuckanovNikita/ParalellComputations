@@ -128,7 +128,6 @@ int main(int argc, char **argv) {
                         + C_V[i]*correct[i+1] - F_V[i])<PRECISION);
                  cout<<"Top triangle shape: OK"<<endl;
 #endif
-                 R_V[r] = B_V[r];
                  R_V[r-1]= C_V[r-1];
 
                  for(size_t i=r-2; i>=l; i--)
@@ -141,18 +140,48 @@ int main(int argc, char **argv) {
                      L_V[i] -= tmp * L_V[i+1];
                      F_V[i] -= tmp * F_V[i+1];
                  }
+                 if(np!=0)
+                 {
+                     size_t i = l-1;
+                     double tmp = C_V[i]/B_V[i+1];
+                     C_V[i] -= tmp * B_V[i+1];
+                     R_V[i] -= tmp * R_V[i+1];
+                     B_V[i] -= tmp * L_V[i+1];
+                     F_V[i] -= tmp * F_V[i+1];
+                 }
+            }
+
+            for(size_t np=0; np < mp; np++) {
+                size_t l = np * (N + 1) / mp;
+                size_t r = (np + 1) * (N + 1) / mp - 1;
+                if (np == mp) {
+                    r = N + 1;
+                }
+                cout << "Block: " << l << " " << r << endl;
 #ifdef TEST
-                if(np == 0)
-                    for(size_t i=l; i<r; i++)
-                        assert(abs(B_V[i]*correct[i]
-                                   + R_V[i]*correct[r] - F_V[i])<PRECISION);
+                if (np == 0)
+                {
+                    for (size_t i = l; i <r; i++)
+                        assert(abs(B_V[i] * correct[i]
+                                   + R_V[i] * correct[r] - F_V[i]) < PRECISION);
+
+                    assert(abs(B_V[r] * correct[r]
+                               + R_V[r] * correct[min(r+(N + 1) / mp, N+1)] - F_V[r]) < PRECISION);
+                }
                 else
-                    for(size_t i=l; i<r; i++)
-                        assert(abs(L_V[i] * correct[l-1] + B_V[i]*correct[i]
-                                   + R_V[i]*correct[r] - F_V[i])<PRECISION);
-                cout<<"Parallel shape: OK"<<endl;
+                {
+                    for (size_t i = l; i < r; i++)
+                        assert(abs(L_V[i] * correct[l - 1] + B_V[i] * correct[i]
+                                   + R_V[i] * correct[r] - F_V[i]) < PRECISION);
+                    assert(abs(L_V[r] * correct[l - 1] + B_V[r] * correct[r]
+                                   + R_V[r] * correct[min(r+(N + 1) / mp, N+1)] - F_V[r]) < PRECISION);
+                }
+
+
+                cout << "Parallel shape: OK" << endl;
 #endif
             }
+
         }
     }
     return 0;
