@@ -1,7 +1,5 @@
 #include <iostream>
 #include <vector>
-#include <fstream>
-#include <algorithm>
 
 
 #include "task.h"
@@ -194,18 +192,18 @@ int main(int argc, char **argv) {
                     r = N + 1;
                 cout << "Block: " << l << " " << r << endl;
                 ANSWER[r] = small_solution[np];
-                for (ssize_t i = r - 1; i >= (ssize_t)l; i--) {
+                for (ssize_t i = r - 1; i >= (ssize_t) l; i--) {
                     if (np == 0) {
                         ANSWER[i] = (F_V[i] - ANSWER[r] * R_V[i]) / B_V[i];
                     } else if (np == mp - 1) {
-                        ANSWER[i] = (F_V[i] - ANSWER[l-1] * L_V[i]) / B_V[i];
+                        ANSWER[i] = (F_V[i] - ANSWER[l - 1] * L_V[i]) / B_V[i];
                     } else {
-                        ANSWER[i] = (F_V[i] - ANSWER[l-1] * L_V[i] - ANSWER[r] * R_V[i]) / B_V[i];
+                        ANSWER[i] = (F_V[i] - ANSWER[l - 1] * L_V[i] - ANSWER[r] * R_V[i]) / B_V[i];
                     }
                 }
             }
 #ifdef TEST
-            for(size_t i=0;i<=N;i++)
+            for (size_t i = 0; i <= N; i++)
                 assert(abs(ANSWER[i] - correct[i]) < PRECISION);
 #endif
         }

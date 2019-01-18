@@ -68,32 +68,35 @@ int main(int argc, char **argv) {
 #ifdef TEST
         BorderEqualityTest(U, U_1, N, a, h);
 #endif
+
+
         for (size_t j = 1; j < N; j++) {
-            /*vector<double> tmp = SequentialThomasSolver(N,
+
+#ifdef SEQUENTIAL
+            vector<double> tmp = SequentialThomasSolver(N,
                                                         [=](size_t i) { return A_1(i, N, a, h, tau); },
                                                         [=](size_t i) { return B_1(i, N, a, h, tau); },
                                                         [=](size_t i) { return C_1(i, N, a, h, tau); },
                                                         [&U, j, N, a, h, tau](size_t i) {
                                                             return F_1(U, i, j, N, a, h, tau);
-                                                        });*/
+                                                        });
+#endif
+
+#ifdef PSEUDO_PARALLEL
             vector<double> tmp = PseudoParallelThomasSolver(N,
-                                                       [=](size_t i) { return A_1(i, N, a, h, tau); },
-                                                       [=](size_t i) { return B_1(i, N, a, h, tau); },
-                                                       [=](size_t i) { return C_1(i, N, a, h, tau); },
-                                                       [&U, j, N, a, h, tau](size_t i) {
-                                                           return F_1(U, i, j, N, a, h, tau);
-                                                       });
+                                                            [=](size_t i) { return A_1(i, N, a, h, tau); },
+                                                            [=](size_t i) { return B_1(i, N, a, h, tau); },
+                                                            [=](size_t i) { return C_1(i, N, a, h, tau); },
+                                                            [&U, j, N, a, h, tau](size_t i) {
+                                                                return F_1(U, i, j, N, a, h, tau);
+                                                            });
+#endif
 
             for (int i = 0; i <= N; i++) {
                 U_1[i][j] = tmp[i];
             }
 #ifdef TEST
             BorderEqualityTest(U, U_1, N, a, h);
-            ThomasSolutionTest(tmp, N,
-                               [=](size_t i) { return A_1(i, N, a, h, tau); },
-                               [=](size_t i) { return B_1(i, N, a, h, tau); },
-                               [=](size_t i) { return C_1(i, N, a, h, tau); },
-                               [&U, j, N, a, h, tau](size_t i) { return F_1(U, i, j, N, a, h, tau); });
 #endif
         }
 
@@ -117,23 +120,18 @@ int main(int argc, char **argv) {
 
 #ifdef PSEUDO_PARALLEL
             vector<double> tmp = PseudoParallelThomasSolver(N,
-                                                       [=](size_t i) { return A_2(i, N, a, h, tau); },
-                                                       [=](size_t i) { return B_2(i, N, a, h, tau); },
-                                                       [=](size_t i) { return C_2(i, N, a, h, tau); },
-                                                       [&U, j, N, a, h, tau](size_t i) {
-                                                           return F_2(U, j, i, N, a, h, tau);
-                                                       });
+                                                            [=](size_t i) { return A_2(i, N, a, h, tau); },
+                                                            [=](size_t i) { return B_2(i, N, a, h, tau); },
+                                                            [=](size_t i) { return C_2(i, N, a, h, tau); },
+                                                            [&U, j, N, a, h, tau](size_t i) {
+                                                                return F_2(U, j, i, N, a, h, tau);
+                                                            });
 #endif
 
             for (int i = 0; i <= N; i++)
                 U_1[j][i] = tmp[i];
 #ifdef TEST
             BorderEqualityTest(U, U_1, N, a, h);
-            ThomasSolutionTest(tmp, N,
-                               [=](size_t i) { return A_2(i, N, a, h, tau); },
-                               [=](size_t i) { return B_2(i, N, a, h, tau); },
-                               [=](size_t i) { return C_2(i, N, a, h, tau); },
-                               [&U, j, N, a, h, tau](size_t i) { return F_2(U, j, i, N, a, h, tau); });
 #endif
         }
         swap(U, U_1);

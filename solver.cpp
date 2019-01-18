@@ -15,6 +15,7 @@ vector<double> SequentialThomasSolver(const size_t &N,
 #ifdef TEST
     DiagonalDominance(N, A, B, C, F);
 #endif
+
     vector<double> s(N + 1);
     vector<double> t(N + 1);
     vector<double> result(N + 1);
@@ -29,6 +30,9 @@ vector<double> SequentialThomasSolver(const size_t &N,
         result[i] = result[i + 1] * s[i] + t[i];
     }
     result[0] = result[1] * s[0] + t[0];
+#ifdef TEST
+    ThomasSolutionTest(result, N, A, B, C, F);
+#endif
     return result;
 }
 
@@ -43,9 +47,9 @@ vector<double> PseudoParallelThomasSolver(const size_t &N,
 #endif
     vector<double> BUFFER_A(mp), BUFFER_B(mp), BUFFER_C(mp), BUFFER_F(mp);
     vector<double> ANSWER(N + 1);
-    vector<double> A_V(N + 1), B_V(N + 1), C_V(N + 1), F_V(N + 1), L_V(N + 1), R_V(N + 1);
+    vector<double> B_V(N + 1), C_V(N + 1), F_V(N + 1), L_V(N + 1), R_V(N + 1);
+
     for (size_t i = 0; i < N + 1; i++) {
-        A_V[i] = A(i);
         B_V[i] = -B(i);
         C_V[i] = C(i);
         F_V[i] = F(i);
@@ -59,22 +63,14 @@ vector<double> PseudoParallelThomasSolver(const size_t &N,
         }
         L_V[l] = A(l);
         for (size_t i = l + 1; i <= r; i++) {
-            double tmp = A_V[i] / B_V[i - 1];
-            A_V[i] -= tmp * B_V[i - 1];
+            double tmp = A(i) / B_V[i - 1];
             B_V[i] -= tmp * C_V[i - 1];
             F_V[i] -= tmp * F_V[i - 1];
             if (np != 0 && i != l)
                 L_V[i] -= tmp * L_V[i - 1];
         }
 #ifdef TEST
-        if (np == 0)
-            for (size_t i = l; i <= r; i++)
-                assert(abs(B_V[i] * correct[i]
-                           + C_V[i] * correct[i + 1] - F_V[i]) < PRECISION);
-        else
-            for (size_t i = l; i <= r; i++)
-                assert(abs(L_V[i] * correct[l - 1] + B_V[i] * correct[i]
-                           + C_V[i] * correct[i + 1] - F_V[i]) < PRECISION);
+        TopTriagleCheck(l, r, np, L_V, B_V, C_V, F_V, correct);
 #endif
         R_V[r - 1] = C_V[r - 1];
 
@@ -108,41 +104,15 @@ vector<double> PseudoParallelThomasSolver(const size_t &N,
         BUFFER_F[np] = F_V[r];
 
 #ifdef TEST
-        if (np == 0) {
-            for (size_t i = l; i < r; i++)
-                assert(abs(B_V[i] * correct[i]
-                           + R_V[i] * correct[r] - F_V[i]) < PRECISION);
-
-            assert(abs(B_V[r] * correct[r]
-                       + R_V[r] * correct[min(r + (N + 1) / mp, N + 1)] - F_V[r]) < PRECISION);
-        } else {
-            for (size_t i = l; i < r; i++)
-                assert(abs(L_V[i] * correct[l - 1] + B_V[i] * correct[i]
-                           + R_V[i] * correct[r] - F_V[i]) < PRECISION);
-            if(np != mp-1)
-                assert(abs(L_V[r] * correct[l - 1] + B_V[r] * correct[r]
-                       + R_V[r] * correct[min(r + (N + 1) / mp, N + 1)] - F_V[r]) < PRECISION);
-            else
-                {
-                    assert(abs(L_V[r] * correct[l - 1] + B_V[r] * correct[r] - F_V[r]) < PRECISION);
-                }
-        }
+        MatrixCheck(l, r, np, mp, N, L_V, B_V, C_V, F_V, R_V, correct);
 #endif
-
     }
 
-    vector<double> small_solution = SequentialThomasSolver(mp-1,
+    vector<double> small_solution = SequentialThomasSolver(mp - 1,
                                                            [=](size_t i) { return BUFFER_A[i]; },
                                                            [=](size_t i) { return -BUFFER_B[i]; },
                                                            [=](size_t i) { return BUFFER_C[i]; },
                                                            [=](size_t i) { return BUFFER_F[i]; });
-#ifdef TEST
-    ThomasSolutionTest(small_solution, mp,
-                       [=](size_t i) { return BUFFER_A[i]; },
-                       [=](size_t i) { return -BUFFER_B[i]; },
-                       [=](size_t i) { return BUFFER_C[i]; },
-                       [=](size_t i) { return BUFFER_F[i]; });
-#endif
 
     for (size_t np = 0; np < mp; np++) {
         size_t l = np * (N + 1) / mp;
@@ -153,20 +123,19 @@ vector<double> PseudoParallelThomasSolver(const size_t &N,
         for (ssize_t i = r - 1; i >= (ssize_t) l; i--) {
             if (np == 0) {
                 ANSWER[i] = (F_V[i] - ANSWER[r] * R_V[i]) / B_V[i];
-            }
-            else {
+            } else {
                 ANSWER[i] = (F_V[i] - ANSWER[l - 1] * L_V[i] - ANSWER[r] * R_V[i]) / B_V[i];
             }
         }
     }
 #ifdef TEST
     {
-        double max_d=-1;
-        for (size_t i = 0; i <= N; i++)
-        {
+        double max_d = -1;
+        for (size_t i = 0; i <= N; i++) {
             max_d = max(max_d, abs(ANSWER[i] - correct[i]));
             assert(abs(ANSWER[i] - correct[i]) < PRECISION);
         }
+        ThomasSolutionTest(ANSWER, N, A, B, C, F);
     };
 #endif
     return ANSWER;
