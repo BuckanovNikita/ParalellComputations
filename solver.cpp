@@ -40,7 +40,6 @@ vector<double> PseudoParallelThomasSolver(const size_t &N,
 #ifdef TEST
     vector<double> correct = SequentialThomasSolver(N, A, B, C, F);
     ThomasSolutionTest(correct, N, A, B, C, F);
-    cout << "Sequential solution: OK" << endl;
 #endif
     vector<double> BUFFER_A(mp), BUFFER_B(mp), BUFFER_C(mp), BUFFER_F(mp);
     vector<double> ANSWER(N + 1);
@@ -76,7 +75,6 @@ vector<double> PseudoParallelThomasSolver(const size_t &N,
             for (size_t i = l; i <= r; i++)
                 assert(abs(L_V[i] * correct[l - 1] + B_V[i] * correct[i]
                            + C_V[i] * correct[i + 1] - F_V[i]) < PRECISION);
-        cout << "Top triangle shape: OK" << endl;
 #endif
         R_V[r - 1] = C_V[r - 1];
 
@@ -115,16 +113,20 @@ vector<double> PseudoParallelThomasSolver(const size_t &N,
                 assert(abs(B_V[i] * correct[i]
                            + R_V[i] * correct[r] - F_V[i]) < PRECISION);
 
-            //assert(abs(B_V[r] * correct[r]
-            //           + R_V[r] * correct[min(r + (N + 1) / mp, N + 1)] - F_V[r]) < PRECISION);
+            assert(abs(B_V[r] * correct[r]
+                       + R_V[r] * correct[min(r + (N + 1) / mp, N + 1)] - F_V[r]) < PRECISION);
         } else {
             for (size_t i = l; i < r; i++)
                 assert(abs(L_V[i] * correct[l - 1] + B_V[i] * correct[i]
                            + R_V[i] * correct[r] - F_V[i]) < PRECISION);
-            //assert(abs(L_V[r] * correct[l - 1] + B_V[r] * correct[r]
-            //           + R_V[r] * correct[min(r + (N + 1) / mp, N + 1)] - F_V[r]) < PRECISION);
+            if(np != mp-1)
+                assert(abs(L_V[r] * correct[l - 1] + B_V[r] * correct[r]
+                       + R_V[r] * correct[min(r + (N + 1) / mp, N + 1)] - F_V[r]) < PRECISION);
+            else
+                {
+                    assert(abs(L_V[r] * correct[l - 1] + B_V[r] * correct[r] - F_V[r]) < PRECISION);
+                }
         }
-        cout << "Parallel shape: OK" << endl;
 #endif
 
     }
@@ -140,7 +142,6 @@ vector<double> PseudoParallelThomasSolver(const size_t &N,
                        [=](size_t i) { return -BUFFER_B[i]; },
                        [=](size_t i) { return BUFFER_C[i]; },
                        [=](size_t i) { return BUFFER_F[i]; });
-    cout << "Small system solution: OK" << endl;
 #endif
 
     for (size_t np = 0; np < mp; np++) {

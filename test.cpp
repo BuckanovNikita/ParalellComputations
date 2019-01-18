@@ -10,7 +10,6 @@ void DiagonalDominance(const size_t &N,
                        const function<double(size_t)> &F) {
     for(size_t i = 0; i <= N; i++)
         assert(fabs(A(i) + C(i)) <= fabs(B(i)));
-    cout<<"Diagonal dominance: OK"<<endl;
 }
 
 void ThomasSolutionTest(vector<double> &U,

@@ -12,6 +12,12 @@
 #define INFO
 #define TEST
 
+//#define SEQUENTIAL
+
+#ifndef SEQUENTIAL
+#define PSEUDO_PARALLEL
+#endif
+
 using namespace std;
 
 int main(int argc, char **argv) {
@@ -99,14 +105,17 @@ int main(int argc, char **argv) {
 
         for (size_t j = 1; j < N; j++) {
 
-            /*vector<double> tmp = SequentialThomasSolver(N,
+#ifdef SEQUENTIAL
+            vector<double> tmp = SequentialThomasSolver(N,
                                                         [=](size_t i) { return A_2(i, N, a, h, tau); },
                                                         [=](size_t i) { return B_2(i, N, a, h, tau); },
                                                         [=](size_t i) { return C_2(i, N, a, h, tau); },
                                                         [&U, j, N, a, h, tau](size_t i) {
                                                             return F_2(U, j, i, N, a, h, tau);
-                                                        });*/
+                                                        });
+#endif
 
+#ifdef PSEUDO_PARALLEL
             vector<double> tmp = PseudoParallelThomasSolver(N,
                                                        [=](size_t i) { return A_2(i, N, a, h, tau); },
                                                        [=](size_t i) { return B_2(i, N, a, h, tau); },
@@ -114,6 +123,7 @@ int main(int argc, char **argv) {
                                                        [&U, j, N, a, h, tau](size_t i) {
                                                            return F_2(U, j, i, N, a, h, tau);
                                                        });
+#endif
 
             for (int i = 0; i <= N; i++)
                 U_1[j][i] = tmp[i];
@@ -129,6 +139,7 @@ int main(int argc, char **argv) {
         swap(U, U_1);
 #ifdef INFO
         PrecisionInfo(U, U_1, a, h, N);
+        cout << endl;
 #endif
     }
     return 0;
