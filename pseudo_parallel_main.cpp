@@ -1,6 +1,7 @@
 #include <iostream>
 #include <vector>
 #include <fstream>
+#include <algorithm>
 
 
 #include "task.h"
@@ -64,8 +65,6 @@ int main(int argc, char **argv) {
 
     vector<double> BUFFER_U(N+1);
 
-    vector<double> B_V[mp], C_V[mp], F_V[mp], L[mp], R[mp];
-
     for (it = 0; it < max_iter; it++) {
 #ifdef TEST
         BorderEqualityTest(U, U_1, N, a, h);
@@ -80,204 +79,81 @@ int main(int argc, char **argv) {
                                   return F_1(U, i, j, N, a, h, tau);
                               });
 #endif
-            //TODO Параллельная прогонка решение в переменной tmp
+            //Параллельная прогонка по строкам
             auto A = [=](size_t i) { return A_1(i, N, a, h, tau); };
-            auto B = [=](size_t i) { return -B_1(i, N, a, h, tau); };
-            auto B_ = [=](size_t i) { return B_1(i, N, a, h, tau); };
+            auto B = [=](size_t i) { return B_1(i, N, a, h, tau); };
             auto C = [=](size_t i) { return C_1(i, N, a, h, tau); };
             auto F = [&U, j, N, a, h, tau](size_t i) { return F_1(U, i, j, N, a, h, tau); };
 
 #ifdef TEST
-            vector<double> correct = SequentialThomasSolver(N,A,B_,C,F);
-            ThomasSolutionTest(correct, N, A, B_, C, F);
+            vector<double> correct = SequentialThomasSolver(N,A,B,C,F);
+            ThomasSolutionTest(correct, N, A, B, C, F);
             cout<<"Sequential solution: OK"<<endl;
 #endif
-
-#ifdef MATRIX_INFO
-            for (size_t i = 0; i <= N; i++)
-                cout << A(i) << " " << B(i) << " " << C(i) << " " << F(i) << endl;
-#endif
-
-            for (size_t np = 0; np < mp; np++) {
-                size_t l = np * (N + 1) / mp;
-                size_t r = (np + 1) * (N + 1) / mp - 1;
-                if (np == mp) {
-                    r = N + 1;
-                }
-                B_V[np] = vector<double>(r - l + 1);
-                C_V[np] = vector<double>(r - l + 1);
-                F_V[np] = vector<double>(r - l + 1);
-                L[np] = vector<double>(r - l + 1);
-                R[np] = vector<double>(r - l + 1);
+            vector<double> A_V(N+1), B_V(N+1), C_V(N+1), F_V(N+1), L_V(N+1), R_V(N+1);
+            for(size_t i=0; i < N+1; i++)
+            {
+                A_V[i] = A(i);
+                B_V[i] = -B(i);
+                C_V[i] = C(i);
+                F_V[i] = F(i);
             }
 
-            for (size_t np = 0; np < mp; np++) {
+            for(size_t np=0; np < mp; np++)
+            {
                 size_t l = np * (N + 1) / mp;
                 size_t r = (np + 1) * (N + 1) / mp - 1;
                 if (np == mp) {
                     r = N + 1;
                 }
                 cout << "Block: " << l << " " << r << endl;
-                for (size_t k = 0; k <= r - l; k++) {
-                    B_V[np][k] = B(l + k);
-                    C_V[np][k] = C(l + k);
-                    F_V[np][k] = F(l + k);
-                }
-
-                L[np][0] = A(l);
-                for (size_t k = 1; k <= r - l; k++) {
-                    B_V[np][k] -= C_V[np][k - 1] * A(l + k) / B_V[np][k - 1];
-                    F_V[np][k] -= F_V[np][k - 1] * A(l + k) / B_V[np][k - 1];
-                    if (np != 0) {
-                        L[np][k] = -L[np][k - 1] * A(l + k) / B_V[np][k - 1];
-                     }
-                }
-#ifdef TEST
-                if( np == 0 )
-                    for(size_t i = 0; i <= r-l; i++)
-                    {
-                        double res = fabs(B_V[np][i]*correct[i] + C_V[np][i]*correct[i+1] - F_V[np][i]);
-                        assert(res < PRECISION);
-                    }
-                else {
-
-                    for (size_t i = 0; i <= r - l; i++) {
-                        double res = fabs(L[np][i] * correct[l - 1] + B_V[np][i] * correct[l + i] +
-                                          C_V[np][i] * correct[l + i + 1] - F_V[np][i]);
-                        assert(res < PRECISION);
-                    }
-                }
-                cout<<"Upper triangle form: OK"<<endl;
-#endif
-
-                R[np][r-l-1] = C_V[np][r-l-1];
-
-                for(ssize_t k= r-l-2; k>=0; k--)
+                L_V[l] = A(l);
+                for(size_t i=l+1; i<=r; i++)
                 {
-                    R[np][k] = -C_V[np][k]/B_V[np][k+1] * C_V[np][k+1];
-                    L[np][k] -=  C_V[np][k]/B_V[np][k+1] * L[np][k+1];
-                    F_V[np][k] -=  C_V[np][k]/B_V[np][k+1] * F_V[np][k+1];
-                }
-
-                //TODO Обмен коэффиецентами
-
-                if(np!=0)
-                {
-                     B_V[np-1].back() -= C(l-1)/B(l)*L[np][0];
-                     R[np-1].back() = -C(l-1)/B(l)*R[np][0];
+                    double tmp = A_V[i]/B_V[i-1];
+                    A_V[i] -= tmp * B_V[i-1];
+                    B_V[i] -= tmp * C_V[i-1];
+                    F_V[i] -= tmp * F_V[i-1];
+                    if(np!=0 && i!=l)
+                        L_V[i] -= tmp * L_V[i-1];
                 }
 #ifdef TEST
-                if( np == 0 )
-                    for(size_t i = 0; i < r-l; i++)
-                    {
-                        double res = fabs(B_V[np][i]*correct[i] + R[np][i]*correct[r] - F_V[np][i]);
-                        assert(res < PRECISION);
-                    }
-                else {
-
-                    for (size_t i = 1; i < r - l; i++) {
-                        double res = abs(L[np][i]*correct[l - 1] + B_V[np][i] * correct[l + i] + R[np][i] * correct[r] - F_V[np][i]);
-                        double a1 = L[np][i]*correct[l - 1] + B_V[np][i] * correct[l + i] + R[np][i] * correct[r];
-                        double a2 = F_V[np][i];
-                        assert(res < PRECISION);
-                    }
-                }
-                cout<<"Parallel form: OK"<<endl;
+                if(np == 0)
+                    for(size_t i=l; i<=r; i++)
+                        assert(abs(B_V[i]*correct[i]
+                        + C_V[i]*correct[i+1] - F_V[i])<PRECISION);
+                else
+                    for(size_t i=l; i<=r; i++)
+                        assert(abs(L_V[i] * correct[l-1] + B_V[i]*correct[i]
+                        + C_V[i]*correct[i+1] - F_V[i])<PRECISION);
+                 cout<<"Top triangle shape: OK"<<endl;
 #endif
-            }
+                 R_V[r] = B_V[r];
+                 R_V[r-1]= C_V[r-1];
 
-            for (size_t np = 0; np < mp; np++) {
-                size_t l = np * (N + 1) / mp;
-                size_t r = (np + 1) * (N + 1) / mp - 1;
-                if (np == mp) {
-                    r = N + 1;
-                }
-                cout << "Block: " << l << " " << r << endl;
-                if(np!=0)
-                    BUFFER_A[np] = L[np][r-l];
-
-                BUFFER_B[np] = B_V[np][r-l];
-                BUFFER_F[np] = F_V[np][r-l];
-
-                if(np!=mp-1)
-                    BUFFER_C[np] = R[np+1][0];
-
-            }
-            vector<double> tmp = SequentialThomasSolver(mp,
-                                                        [=](size_t i) {return BUFFER_A[i];},
-                                                        [=](size_t i) {return BUFFER_B[i];},
-                                                        [=](size_t i) {return BUFFER_C[i];},
-                                                        [=](size_t i) {return BUFFER_F[i];});
+                 for(size_t i=r-2; i>=l; i--)
+                 {
+                     if(i == 0 && np == 0)
+                         break;
+                     double tmp = C_V[i]/B_V[i+1];
+                     C_V[i] -= tmp * B_V[i+1];
+                     R_V[i] -= tmp * R_V[i+1];
+                     L_V[i] -= tmp * L_V[i+1];
+                     F_V[i] -= tmp * F_V[i+1];
+                 }
 #ifdef TEST
-            ThomasSolutionTest(tmp, mp,[=](size_t i) {return BUFFER_A[i];},
-                               [=](size_t i) {return BUFFER_B[i];},
-                               [=](size_t i) {return BUFFER_C[i];},
-                               [=](size_t i) {return BUFFER_F[i];});
-            cout<<"Solution of small system: OK"<<endl;
-#endif
-            for (size_t np = 0; np < mp; np++) {
-                size_t l = np * (N + 1) / mp;
-                size_t r = (np + 1) * (N + 1) / mp - 1;
-                if (np == mp) {
-                    r = N + 1;
-                }
-                cout << "Block: " << l << " " << r << endl;
-                BUFFER_U[r] = tmp[np];
-                for(ssize_t i=r-l-1; i>=0; i--) {
-                    BUFFER_U[l+i] = F_V[np][i];
-                    if(np!=0)
-                        BUFFER_U[l+i] -= L[np][i]*tmp[np-1];
-                    if(np!=mp-1)
-                        BUFFER_U[l+i] -= R[np][i+1]*tmp[np];
-                    BUFFER_U[l+i] /= B_V[np][i];
-                }
-            }
-#ifdef TEST
-            ThomasSolutionTest(BUFFER_U, N,
-                               [=](size_t i) { return A_1(i, N, a, h, tau); },
-                               [=](size_t i) { return B_1(i, N, a, h, tau); },
-                               [=](size_t i) { return C_1(i, N, a, h, tau); },
-                               [&U, j, N, a, h, tau](size_t i) { return F_1(U, i, j, N, a, h, tau); });
+                if(np == 0)
+                    for(size_t i=l; i<r; i++)
+                        assert(abs(B_V[i]*correct[i]
+                                   + R_V[i]*correct[r] - F_V[i])<PRECISION);
+                else
+                    for(size_t i=l; i<r; i++)
+                        assert(abs(L_V[i] * correct[l-1] + B_V[i]*correct[i]
+                                   + R_V[i]*correct[r] - F_V[i])<PRECISION);
+                cout<<"Parallel shape: OK"<<endl;
 #endif
             }
-
         }
-        cout<<BUFFER_U[0]<<endl;
-
-
-
-        /*swap(U, U_1);
-
-#ifdef TEST
-        BorderEqualityTest(U, U_1, N, a, h);
-#endif
-
-#ifdef INFO
-        PrecisionInfo(U, U_1, a, h, N);
-#endif
-
-        for (size_t j = 1; j < N; j++) {
-#ifdef TEST
-            DiagonalDominance(N,
-                              [=](size_t i) { return A1(i, N, a, h, tau); },
-                              [=](size_t i) { return B1(i, N, a, h, tau); },
-                              [=](size_t i) { return C1(i, N, a, h, tau); },
-                              [&U, j, N, a, h, tau](size_t i) {
-                                  return F1(U, j, i, N, a, h, tau);
-                              });
-#endif
-            //TODO Параллельная прогонка решение в переменной tmp
-#ifdef TEST
-            ThomasSolutionTest(tmp, N,
-                               [=](size_t i) { return A1(i, N, a, h, tau); },
-                               [=](size_t i) { return B1(i, N, a, h, tau); },
-                               [=](size_t i) { return C1(i, N, a, h, tau); },
-                               [&U, j, N, a, h, tau](size_t i) { return F1(U, j, i, N, a, h, tau); });
-#endif
-        }
-        swap(U, U_1);
-#ifdef INFO
-        PrecisionInfo(U, U_1, a, h, N);
-#endif*/
+    }
     return 0;
 }
