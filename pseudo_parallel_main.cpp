@@ -9,7 +9,6 @@
 #include "test.h"
 #include "solver.h"
 
-#define PARALLEL_INFO
 //#define INFO
 #define PRECISION 1e-8
 //#define MATRIX_INFO
@@ -52,8 +51,8 @@ int main(int argc, char **argv) {
 
     vector<vector<double>> U, U_1;
     for (size_t i = 0; i <= N; i++) {
-        U.emplace_back(vector<double>(N+1));
-        U_1.emplace_back(vector<double>(N+1));
+        U.emplace_back(vector<double>(N + 1));
+        U_1.emplace_back(vector<double>(N + 1));
     }
 
     for (size_t i = 0; i <= N; i++) {
@@ -63,7 +62,7 @@ int main(int argc, char **argv) {
 
     vector<double> BUFFER_A(mp), BUFFER_B(mp), BUFFER_C(mp), BUFFER_F(mp);
 
-    vector<double> BUFFER_U(N+1);
+    vector<double> ANSWER(N + 1);
 
     for (it = 0; it < max_iter; it++) {
 #ifdef TEST
@@ -86,21 +85,19 @@ int main(int argc, char **argv) {
             auto F = [&U, j, N, a, h, tau](size_t i) { return F_1(U, i, j, N, a, h, tau); };
 
 #ifdef TEST
-            vector<double> correct = SequentialThomasSolver(N,A,B,C,F);
+            vector<double> correct = SequentialThomasSolver(N, A, B, C, F);
             ThomasSolutionTest(correct, N, A, B, C, F);
-            cout<<"Sequential solution: OK"<<endl;
+            cout << "Sequential solution: OK" << endl;
 #endif
-            vector<double> A_V(N+1), B_V(N+1), C_V(N+1), F_V(N+1), L_V(N+1), R_V(N+1);
-            for(size_t i=0; i < N+1; i++)
-            {
+            vector<double> A_V(N + 1), B_V(N + 1), C_V(N + 1), F_V(N + 1), L_V(N + 1), R_V(N + 1);
+            for (size_t i = 0; i < N + 1; i++) {
                 A_V[i] = A(i);
                 B_V[i] = -B(i);
                 C_V[i] = C(i);
                 F_V[i] = F(i);
             }
 
-            for(size_t np=0; np < mp; np++)
-            {
+            for (size_t np = 0; np < mp; np++) {
                 size_t l = np * (N + 1) / mp;
                 size_t r = (np + 1) * (N + 1) / mp - 1;
                 if (np == mp) {
@@ -108,81 +105,110 @@ int main(int argc, char **argv) {
                 }
                 cout << "Block: " << l << " " << r << endl;
                 L_V[l] = A(l);
-                for(size_t i=l+1; i<=r; i++)
-                {
-                    double tmp = A_V[i]/B_V[i-1];
-                    A_V[i] -= tmp * B_V[i-1];
-                    B_V[i] -= tmp * C_V[i-1];
-                    F_V[i] -= tmp * F_V[i-1];
-                    if(np!=0 && i!=l)
-                        L_V[i] -= tmp * L_V[i-1];
+                for (size_t i = l + 1; i <= r; i++) {
+                    double tmp = A_V[i] / B_V[i - 1];
+                    A_V[i] -= tmp * B_V[i - 1];
+                    B_V[i] -= tmp * C_V[i - 1];
+                    F_V[i] -= tmp * F_V[i - 1];
+                    if (np != 0 && i != l)
+                        L_V[i] -= tmp * L_V[i - 1];
                 }
-#ifdef TEST
-                if(np == 0)
-                    for(size_t i=l; i<=r; i++)
-                        assert(abs(B_V[i]*correct[i]
-                        + C_V[i]*correct[i+1] - F_V[i])<PRECISION);
-                else
-                    for(size_t i=l; i<=r; i++)
-                        assert(abs(L_V[i] * correct[l-1] + B_V[i]*correct[i]
-                        + C_V[i]*correct[i+1] - F_V[i])<PRECISION);
-                 cout<<"Top triangle shape: OK"<<endl;
-#endif
-                 R_V[r-1]= C_V[r-1];
-
-                 for(size_t i=r-2; i>=l; i--)
-                 {
-                     if(i == 0 && np == 0)
-                         break;
-                     double tmp = C_V[i]/B_V[i+1];
-                     C_V[i] -= tmp * B_V[i+1];
-                     R_V[i] -= tmp * R_V[i+1];
-                     L_V[i] -= tmp * L_V[i+1];
-                     F_V[i] -= tmp * F_V[i+1];
-                 }
-                 if(np!=0)
-                 {
-                     size_t i = l-1;
-                     double tmp = C_V[i]/B_V[i+1];
-                     C_V[i] -= tmp * B_V[i+1];
-                     R_V[i] -= tmp * R_V[i+1];
-                     B_V[i] -= tmp * L_V[i+1];
-                     F_V[i] -= tmp * F_V[i+1];
-                 }
-            }
-
-            for(size_t np=0; np < mp; np++) {
-                size_t l = np * (N + 1) / mp;
-                size_t r = (np + 1) * (N + 1) / mp - 1;
-                if (np == mp) {
-                    r = N + 1;
-                }
-                cout << "Block: " << l << " " << r << endl;
 #ifdef TEST
                 if (np == 0)
-                {
-                    for (size_t i = l; i <r; i++)
+                    for (size_t i = l; i <= r; i++)
+                        assert(abs(B_V[i] * correct[i]
+                                   + C_V[i] * correct[i + 1] - F_V[i]) < PRECISION);
+                else
+                    for (size_t i = l; i <= r; i++)
+                        assert(abs(L_V[i] * correct[l - 1] + B_V[i] * correct[i]
+                                   + C_V[i] * correct[i + 1] - F_V[i]) < PRECISION);
+                cout << "Top triangle shape: OK" << endl;
+#endif
+                R_V[r - 1] = C_V[r - 1];
+
+                for (size_t i = r - 2; i >= l; i--) {
+                    if (i == 0 && np == 0)
+                        break;
+                    double tmp = C_V[i] / B_V[i + 1];
+                    C_V[i] -= tmp * B_V[i + 1];
+                    R_V[i] -= tmp * R_V[i + 1];
+                    L_V[i] -= tmp * L_V[i + 1];
+                    F_V[i] -= tmp * F_V[i + 1];
+                }
+                if (np != 0) {
+                    size_t i = l - 1;
+                    double tmp = C_V[i] / B_V[i + 1];
+                    C_V[i] -= tmp * B_V[i + 1];
+                    R_V[i] -= tmp * R_V[i + 1];
+                    B_V[i] -= tmp * L_V[i + 1];
+                    F_V[i] -= tmp * F_V[i + 1];
+                }
+            }
+
+            for (size_t np = 0; np < mp; np++) {
+                size_t l = np * (N + 1) / mp;
+                size_t r = (np + 1) * (N + 1) / mp - 1;
+                if (np == mp)
+                    r = N + 1;
+                cout << "Block: " << l << " " << r << endl;
+                BUFFER_A[np] = L_V[r];
+                BUFFER_B[np] = B_V[r];
+                BUFFER_C[np] = R_V[r];
+                BUFFER_F[np] = F_V[r];
+#ifdef TEST
+                if (np == 0) {
+                    for (size_t i = l; i < r; i++)
                         assert(abs(B_V[i] * correct[i]
                                    + R_V[i] * correct[r] - F_V[i]) < PRECISION);
 
                     assert(abs(B_V[r] * correct[r]
-                               + R_V[r] * correct[min(r+(N + 1) / mp, N+1)] - F_V[r]) < PRECISION);
-                }
-                else
-                {
+                               + R_V[r] * correct[min(r + (N + 1) / mp, N + 1)] - F_V[r]) < PRECISION);
+                } else {
                     for (size_t i = l; i < r; i++)
                         assert(abs(L_V[i] * correct[l - 1] + B_V[i] * correct[i]
                                    + R_V[i] * correct[r] - F_V[i]) < PRECISION);
                     assert(abs(L_V[r] * correct[l - 1] + B_V[r] * correct[r]
-                                   + R_V[r] * correct[min(r+(N + 1) / mp, N+1)] - F_V[r]) < PRECISION);
+                               + R_V[r] * correct[min(r + (N + 1) / mp, N + 1)] - F_V[r]) < PRECISION);
                 }
-
-
                 cout << "Parallel shape: OK" << endl;
 #endif
             }
 
+            vector<double> small_solution = SequentialThomasSolver(mp,
+                                                                   [=](size_t i) { return BUFFER_A[i]; },
+                                                                   [=](size_t i) { return -BUFFER_B[i]; },
+                                                                   [=](size_t i) { return BUFFER_C[i]; },
+                                                                   [=](size_t i) { return BUFFER_F[i]; });
+#ifdef TEST
+            ThomasSolutionTest(small_solution, mp,
+                               [=](size_t i) { return BUFFER_A[i]; },
+                               [=](size_t i) { return -BUFFER_B[i]; },
+                               [=](size_t i) { return BUFFER_C[i]; },
+                               [=](size_t i) { return BUFFER_F[i]; });
+            cout << "Small system solution: OK" << endl;
+#endif
+            for (size_t np = 0; np < mp; np++) {
+                size_t l = np * (N + 1) / mp;
+                size_t r = (np + 1) * (N + 1) / mp - 1;
+                if (np == mp)
+                    r = N + 1;
+                cout << "Block: " << l << " " << r << endl;
+                ANSWER[r] = small_solution[np];
+                for (ssize_t i = r - 1; i >= (ssize_t)l; i--) {
+                    if (np == 0) {
+                        ANSWER[i] = (F_V[i] - ANSWER[r] * R_V[i]) / B_V[i];
+                    } else if (np == mp - 1) {
+                        ANSWER[i] = (F_V[i] - ANSWER[l-1] * L_V[i]) / B_V[i];
+                    } else {
+                        ANSWER[i] = (F_V[i] - ANSWER[l-1] * L_V[i] - ANSWER[r] * R_V[i]) / B_V[i];
+                    }
+                }
+            }
+#ifdef TEST
+            for(size_t i=0;i<=N;i++)
+                assert(abs(ANSWER[i] - correct[i]) < PRECISION);
         }
+#endif
     }
     return 0;
 }
