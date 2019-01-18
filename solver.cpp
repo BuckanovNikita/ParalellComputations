@@ -4,7 +4,7 @@
 
 #include "solver.h"
 
-#define TEST
+//#define TEST
 #define PRECISION 1e-8
 
 vector<double> SequentialThomasSolver(const size_t &N,

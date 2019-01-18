@@ -1,20 +1,50 @@
 #include <iostream>
 #include <vector>
+#include <cstdlib>
+#include <unistd.h>
 
 
 #include "task.h"
 #include "scheme.h"
 #include "test.h"
 #include "solver.h"
+#include "mpi.h"
 
 //#define INFO
 #define PRECISION 1e-8
 //#define MATRIX_INFO
-#define TEST
+//#define TEST
 
 using namespace std;
 
+int MyNetInit(int *argc, char ***argv, int *np, int *mp,
+              int *nl, char *pname, double *tick) {
+
+    int i = MPI_Init(argc, argv);
+    if (i != 0) {
+        fprintf(stderr, "MPI initialization error");
+        exit(i);
+    }
+
+    MPI_Comm_size(MPI_COMM_WORLD, np);
+    MPI_Comm_rank(MPI_COMM_WORLD, mp);
+    MPI_Get_processor_name(pname, nl);
+
+    *tick = MPI_Wtick();
+
+    sleep(1);
+
+    return 0;
+}
+
 int main(int argc, char **argv) {
+
+    double tick;
+    char pname[MPI_MAX_PROCESSOR_NAME];
+    int nl;
+
+    size_t np, mp;
+    MyNetInit(&argc, &argv, &np, &mp, &nl, pname, &tick);
 
     if (argc < 3) {
         cout << "Using N, tau, max_iteration filename" << endl;
@@ -187,6 +217,7 @@ int main(int argc, char **argv) {
 #endif
             for (size_t np = 0; np < mp; np++) {
                 size_t l = np * (N + 1) / mp;
+                9
                 size_t r = (np + 1) * (N + 1) / mp - 1;
                 if (np == mp)
                     r = N + 1;

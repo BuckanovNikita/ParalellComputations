@@ -3,8 +3,11 @@ project(imm_cpp)
 
 set(CMAKE_CXX_STANDARD 11)
 
-add_executable(imm_cpp_sequential sequential_main.cpp test.cpp
+#add_executable(imm_cpp_sequential sequential_main.cpp test.cpp
+#        test.h task.cpp task.h scheme.cpp scheme.h solver.cpp solver.h)
+
+add_executable(mpi_parallel parallel_main.cpp test.cpp
         test.h task.cpp task.h scheme.cpp scheme.h solver.cpp solver.h)
 
-add_executable(imm_cpp pseudo_parallel_main.cpp test.cpp
-        test.h task.cpp task.h scheme.cpp scheme.h solver.cpp solver.h)
+#add_executable(imm_cpp pseudo_parallel_thomas.cpp test.cpp
+#        test.h task.cpp task.h scheme.cpp scheme.h solver.cpp solver.h)

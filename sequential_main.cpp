@@ -1,16 +1,18 @@
 #include <iostream>
 #include <vector>
 #include <fstream>
-
+#include <cstdlib>
+#include <unistd.h>
 
 #include "task.h"
 #include "scheme.h"
 #include "test.h"
 #include "solver.h"
+#include "mpi.h"
 
 #define PRECISION 1e-8
 #define INFO
-#define TEST
+//#define TEST
 
 //#define SEQUENTIAL
 
@@ -20,8 +22,34 @@
 
 using namespace std;
 
+int MyNetInit(int *argc, char ***argv, size_t *np, size_t *mp,
+              char *processor_name, double *tick) {
+
+    int i = MPI_Init(argc, argv);
+    int n1;
+    if (i != 0) {
+        cerr << "MPI initialization error" << endl;
+        exit(i);
+    }
+
+    MPI_Comm_size(MPI_COMM_WORLD, (int *) np);
+    MPI_Comm_rank(MPI_COMM_WORLD, (int *) mp);
+    MPI_Get_processor_name(processor_name, &n1);
+
+    *tick = MPI_Wtick();
+    sleep(1);
+    return 0;
+}
+
 int main(int argc, char **argv) {
 
+    double tick;
+    char processor_name[MPI_MAX_PROCESSOR_NAME];
+
+    size_t np, mp;
+    MyNetInit(&argc, &argv, &np, &mp, processor_name, &tick);
+
+    cout << processor_name << endl;
     if (argc < 3) {
         cout << "Using N, tau, max_iteration filename" << endl;
         return -1;
@@ -68,8 +96,6 @@ int main(int argc, char **argv) {
 #ifdef TEST
         BorderEqualityTest(U, U_1, N, a, h);
 #endif
-
-
         for (size_t j = 1; j < N; j++) {
 
 #ifdef SEQUENTIAL
