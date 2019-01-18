@@ -49,8 +49,8 @@ int main(int argc, char **argv) {
 
     vector<vector<double>> U, U_1;
     for (size_t i = 0; i <= N; i++) {
-        U.emplace_back(vector<double>(N));
-        U_1.emplace_back(vector<double>(N));
+        U.emplace_back(vector<double>(N + 1));
+        U_1.emplace_back(vector<double>(N + 1));
     }
 
     for (size_t i = 0; i <= N; i++) {
@@ -59,32 +59,30 @@ int main(int argc, char **argv) {
     }
 
     for (it = 0; it < max_iter; it++) {
-
 #ifdef TEST
         BorderEqualityTest(U, U_1, N, a, h);
 #endif
         for (size_t j = 1; j < N; j++) {
-#ifdef TEST
-            DiagonalDominance(N,
-                    [=](size_t i) { return A_1(i, N, a, h, tau); },
-                    [=](size_t i) { return B_1(i, N, a, h, tau); },
-                    [=](size_t i) { return C_1(i, N, a, h, tau); },
-                    [&U, j, N, a, h, tau](size_t i) {
-                        return F_1(U, i, j, N, a, h, tau);
-                    });
-#endif
-            vector<double> tmp = SequentialThomasSolver(N,
+            /*vector<double> tmp = SequentialThomasSolver(N,
                                                         [=](size_t i) { return A_1(i, N, a, h, tau); },
                                                         [=](size_t i) { return B_1(i, N, a, h, tau); },
                                                         [=](size_t i) { return C_1(i, N, a, h, tau); },
                                                         [&U, j, N, a, h, tau](size_t i) {
                                                             return F_1(U, i, j, N, a, h, tau);
-                                                        });
+                                                        });*/
+            vector<double> tmp = PseudoParallelThomasSolver(N,
+                                                       [=](size_t i) { return A_1(i, N, a, h, tau); },
+                                                       [=](size_t i) { return B_1(i, N, a, h, tau); },
+                                                       [=](size_t i) { return C_1(i, N, a, h, tau); },
+                                                       [&U, j, N, a, h, tau](size_t i) {
+                                                           return F_1(U, i, j, N, a, h, tau);
+                                                       });
 
             for (int i = 0; i <= N; i++) {
                 U_1[i][j] = tmp[i];
             }
 #ifdef TEST
+            BorderEqualityTest(U, U_1, N, a, h);
             ThomasSolutionTest(tmp, N,
                                [=](size_t i) { return A_1(i, N, a, h, tau); },
                                [=](size_t i) { return B_1(i, N, a, h, tau); },
@@ -95,35 +93,32 @@ int main(int argc, char **argv) {
 
         swap(U, U_1);
 
-#ifdef TEST
-        BorderEqualityTest(U, U_1, N, a, h);
-#endif
-
 #ifdef INFO
         PrecisionInfo(U, U_1, a, h, N);
 #endif
 
         for (size_t j = 1; j < N; j++) {
-#ifdef TEST
-            DiagonalDominance(N,
-                             [=](size_t i) { return A_2(i, N, a, h, tau); },
-                             [=](size_t i) { return B_2(i, N, a, h, tau); },
-                             [=](size_t i) { return C_2(i, N, a, h, tau); },
-                             [&U, j, N, a, h, tau](size_t i) {
-                                 return F_2(U, j, i, N, a, h, tau);
-                             });
-#endif
-            vector<double> tmp = SequentialThomasSolver(N,
+
+            /*vector<double> tmp = SequentialThomasSolver(N,
                                                         [=](size_t i) { return A_2(i, N, a, h, tau); },
                                                         [=](size_t i) { return B_2(i, N, a, h, tau); },
                                                         [=](size_t i) { return C_2(i, N, a, h, tau); },
                                                         [&U, j, N, a, h, tau](size_t i) {
                                                             return F_2(U, j, i, N, a, h, tau);
-                                                        });
+                                                        });*/
+
+            vector<double> tmp = PseudoParallelThomasSolver(N,
+                                                       [=](size_t i) { return A_2(i, N, a, h, tau); },
+                                                       [=](size_t i) { return B_2(i, N, a, h, tau); },
+                                                       [=](size_t i) { return C_2(i, N, a, h, tau); },
+                                                       [&U, j, N, a, h, tau](size_t i) {
+                                                           return F_2(U, j, i, N, a, h, tau);
+                                                       });
 
             for (int i = 0; i <= N; i++)
                 U_1[j][i] = tmp[i];
 #ifdef TEST
+            BorderEqualityTest(U, U_1, N, a, h);
             ThomasSolutionTest(tmp, N,
                                [=](size_t i) { return A_2(i, N, a, h, tau); },
                                [=](size_t i) { return B_2(i, N, a, h, tau); },
