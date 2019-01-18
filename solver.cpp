@@ -70,7 +70,7 @@ vector<double> PseudoParallelThomasSolver(const size_t &N,
                 L_V[i] -= tmp * L_V[i - 1];
         }
 #ifdef TEST
-        TopTriagleCheck(l, r, np, L_V, B_V, C_V, F_V, correct);
+        TopTriangleCheck(l, r, np, L_V, B_V, C_V, F_V, correct);
 #endif
         R_V[r - 1] = C_V[r - 1];
 

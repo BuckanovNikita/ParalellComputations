@@ -34,12 +34,12 @@ void BorderEqualityTest(vector<vector<double>> &U, vector<vector<double>> &U_1, 
 
 void PrecisionInfo(vector<vector<double>> &U, vector<vector<double>> &U_1, double a, double h, size_t N);
 
-void TopTriagleCheck(const size_t &l, const size_t &r, const size_t &np,
-                     const vector<double> &L_V,
-                     const vector<double> &B_V,
-                     const vector<double> &C_V,
-                     const vector<double> &F_V,
-                     const vector<double> &correct);
+void TopTriangleCheck(const size_t &l, const size_t &r, const size_t &np,
+                      const vector<double> &L_V,
+                      const vector<double> &B_V,
+                      const vector<double> &C_V,
+                      const vector<double> &F_V,
+                      const vector<double> &correct);
 
 void MatrixCheck(const size_t &l, const size_t &r, const size_t &np, const size_t &mp, const size_t &N,
                  const vector<double> &L_V,
