@@ -22,18 +22,19 @@
 
 using namespace std;
 
-int MyNetInit(int *argc, char ***argv, size_t *np, size_t *mp,
-              char *processor_name, double *tick) {
+int MyNetInit(int* argc, char*** argv, size_t* np, size_t* mp,
+        char* processor_name, double* tick)
+{
 
     int i = MPI_Init(argc, argv);
     int n1;
-    if (i != 0) {
-        cerr << "MPI initialization error" << endl;
+    if (i != 0){
+        cerr << "MPI initialization error"<<endl;
         exit(i);
     }
 
-    MPI_Comm_size(MPI_COMM_WORLD, (int *) np);
-    MPI_Comm_rank(MPI_COMM_WORLD, (int *) mp);
+    MPI_Comm_size(MPI_COMM_WORLD, (int*)np);
+    MPI_Comm_rank(MPI_COMM_WORLD, (int*)mp);
     MPI_Get_processor_name(processor_name, &n1);
 
     *tick = MPI_Wtick();
@@ -47,9 +48,9 @@ int main(int argc, char **argv) {
     char processor_name[MPI_MAX_PROCESSOR_NAME];
 
     size_t np, mp;
-    MyNetInit(&argc, &argv, &np, &mp, processor_name, &tick);
+    MyNetInit(&argc,&argv,&np,&mp,processor_name,&tick);
 
-    cout << processor_name << endl;
+    cout<<processor_name<<endl;
     if (argc < 3) {
         cout << "Using N, tau, max_iteration filename" << endl;
         return -1;

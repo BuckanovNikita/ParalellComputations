@@ -17,18 +17,19 @@
 
 using namespace std;
 
-int MyNetInit(int *argc, char ***argv, int *np, int *mp,
-              int *nl, char *pname, double *tick) {
+int MyNetInit(int* argc, char*** argv, int* np, int* mp,
+              int* nl, char* pname, double* tick)
+{
 
-    int i = MPI_Init(argc, argv);
-    if (i != 0) {
-        fprintf(stderr, "MPI initialization error");
+    int i = MPI_Init(argc,argv);
+    if (i != 0){
+        fprintf(stderr,"MPI initialization error");
         exit(i);
     }
 
-    MPI_Comm_size(MPI_COMM_WORLD, np);
-    MPI_Comm_rank(MPI_COMM_WORLD, mp);
-    MPI_Get_processor_name(pname, nl);
+    MPI_Comm_size(MPI_COMM_WORLD,np);
+    MPI_Comm_rank(MPI_COMM_WORLD,mp);
+    MPI_Get_processor_name(pname,nl);
 
     *tick = MPI_Wtick();
 
@@ -44,7 +45,7 @@ int main(int argc, char **argv) {
     int nl;
 
     size_t np, mp;
-    MyNetInit(&argc, &argv, &np, &mp, &nl, pname, &tick);
+    MyNetInit(&argc,&argv,&np,&mp,&nl,pname,&tick);
 
     if (argc < 3) {
         cout << "Using N, tau, max_iteration filename" << endl;
@@ -216,8 +217,7 @@ int main(int argc, char **argv) {
             cout << "Small system solution: OK" << endl;
 #endif
             for (size_t np = 0; np < mp; np++) {
-                size_t l = np * (N + 1) / mp;
-                9
+                size_t l = np * (N + 1) / mp;9
                 size_t r = (np + 1) * (N + 1) / mp - 1;
                 if (np == mp)
                     r = N + 1;

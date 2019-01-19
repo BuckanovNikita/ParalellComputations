@@ -12,13 +12,15 @@
 
 #define PRECISION 1e-8
 #define INFO
-//#define TEST
 
+#define TEST
 //#define SEQUENTIAL
 
 #ifndef SEQUENTIAL
 #ifndef  PSEUDO_PARALLEL
-#define MPI_PARALLEL
+#ifndef MPI_PARALLEL
+#define MPI_OMP_PARALLEL
+#endif
 #endif
 #endif
 
@@ -56,7 +58,7 @@ int main(int argc, char **argv) {
     auto np = (size_t)np_, mp = (size_t)mp_;
 
     cout<<processor_name<<endl;
-    if (argc < 3) {
+    if (argc < 4) {
         cout << "Using N, tau, max_iteration filename" << endl;
         return -1;
     }
@@ -77,6 +79,12 @@ int main(int argc, char **argv) {
     size_t max_iter = strtoul(argv[3], &err_marker, 10);
     if (*err_marker != '\0') {
         cout << "Invalid max_iteration parameter" << endl;
+        return -1;
+    }
+	
+	size_t mt = strtoul(argv[4], &err_marker, 10);
+	if (*err_marker != '\0') {
+        cout << "Invalid Thread number parameter" << endl;
         return -1;
     }
 
@@ -133,6 +141,15 @@ int main(int argc, char **argv) {
 										np, mp);
 #endif
 
+#ifdef MPI_OMP_PARALLEL
+            vector<double> tmp = MPI_OMP_Solver(N,
+                                        [=](size_t i) { return A_1(i, N, a, h, tau); },
+                                        [=](size_t i) { return B_1(i, N, a, h, tau); },
+                                        [=](size_t i) { return C_1(i, N, a, h, tau); },
+                                        [&U, j, N, a, h, tau](size_t i) {return F_1(U, i, j, N, a, h, tau);},
+										np, mp, mt);
+#endif
+
             for (int i = 0; i <= N; i++) {
                 U_1[i][j] = tmp[i];
             }
@@ -176,7 +193,16 @@ if(np == 0)
                                         [=](size_t i) { return B_2(i, N, a, h, tau); },
                                         [=](size_t i) { return C_2(i, N, a, h, tau); },
                                         [&U, j, N, a, h, tau](size_t i) {return F_2(U, j, i, N, a, h, tau);},
-										np, mp);
+										np, mp, mt);
+#endif
+
+#ifdef MPI_OMP_PARALLEL
+            vector<double> tmp = MPI_OMP_Solver(N,
+                                        [=](size_t i) { return A_2(i, N, a, h, tau); },
+                                        [=](size_t i) { return B_2(i, N, a, h, tau); },
+                                        [=](size_t i) { return C_2(i, N, a, h, tau); },
+                                        [&U, j, N, a, h, tau](size_t i) {return F_2(U, j, i, N, a, h, tau);},
+										np, mp, mt);
 #endif
             for (int i = 0; i <= N; i++)
                 U_1[j][i] = tmp[i];
