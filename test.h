@@ -32,7 +32,7 @@ void DiagonalDominance(const size_t &N,
 
 void BorderEqualityTest(vector<vector<double>> &U, vector<vector<double>> &U_1, size_t N, double a, double h);
 
-void PrecisionInfo(vector<vector<double>> &U, vector<vector<double>> &U_1, double a, double h, size_t N);
+double PrecisionInfo(vector<vector<double>> &U, vector<vector<double>> &U_1, double a, double h, size_t N);
 
 void TopTriangleCheck(const size_t &l, const size_t &r, const size_t &np,
                       const vector<double> &L_V,
@@ -48,5 +48,7 @@ void MatrixCheck(const size_t &l, const size_t &r, const size_t &np, const size_
                  const vector<double> &F_V,
                  const vector<double> &R_V,
                  const vector<double> &correct);
+
+double DU(vector<vector<double>> &U, vector<vector<double>> &U_1, size_t N);
 
 #endif //IMM_CPP_TEST_H

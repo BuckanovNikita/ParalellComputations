@@ -33,7 +33,7 @@ int MyNetInit(int* argc, char*** argv, int* np, int* mp,
     int i = MPI_Init(argc, argv);
     int n1;
     if (i != 0){
-        cerr << "MPI initialization error"<<endl;
+        cout << "MPI initialization error"<<endl;
         exit(i);
     }
 
@@ -41,7 +41,7 @@ int MyNetInit(int* argc, char*** argv, int* np, int* mp,
     MPI_Comm_rank(MPI_COMM_WORLD, np);
     MPI_Get_processor_name(processor_name, &n1);
 
-    *tick = MPI_Wtick();
+    *tick = MPI_Wtime();
     sleep(1);
     return 0;
 }
@@ -58,8 +58,8 @@ int main(int argc, char **argv) {
     auto np = (size_t)np_, mp = (size_t)mp_;
 
     cout<<processor_name<<endl;
-    if (argc < 4) {
-        cout << "Using N, tau, max_iteration filename" << endl;
+    if (argc < 3) {
+        cout << "Using N, max_iteration, num_threads" << endl;
         return -1;
     }
 
@@ -70,28 +70,21 @@ int main(int argc, char **argv) {
         return -1;
     }
 
-    const double tau = strtod(argv[2], &err_marker);
-    if (*err_marker != '\0') {
-        cout << "Invalid tau parameter" << endl;
-        return -1;
-    }
-
-    size_t max_iter = strtoul(argv[3], &err_marker, 10);
+    size_t max_iter = strtoul(argv[2], &err_marker, 10);
     if (*err_marker != '\0') {
         cout << "Invalid max_iteration parameter" << endl;
         return -1;
     }
 	
-	size_t mt = strtoul(argv[4], &err_marker, 10);
+	size_t mt = strtoul(argv[3], &err_marker, 10);
 	if (*err_marker != '\0') {
         cout << "Invalid Thread number parameter" << endl;
         return -1;
     }
-
-    size_t it = 0;
+	
     const double a = 0;
     const double h = 1.0 / N;
-
+	const double tau = 1.0/(M_PI*N);
 
     cout << "Grid size: " << N << endl;
 
@@ -105,8 +98,15 @@ int main(int argc, char **argv) {
         U[i][0] = U_1[i][0] = u_x_1_0(a + h * i);
         U[i][N] = U_1[i][N] = u_x_1_1(a + h * i);
     }
-
-    for (it = 0; it < max_iter; it++) {
+	
+    for (size_t it = 0; it < max_iter; it++) {
+		if(np == 0)	
+			{
+				cout<<"Iteration: "<< it <<endl;
+				cout << "Max error: "<< PrecisionInfo(U, U_1, a, h, N) <<endl;
+				cout << "Work time:" << MPI_Wtime()-tick << endl;
+				cout << endl;
+			}
 #ifdef TEST
         BorderEqualityTest(U, U_1, N, a, h);
 #endif
@@ -159,12 +159,7 @@ int main(int argc, char **argv) {
         }
 
         swap(U, U_1);
-
-#ifdef INFO
-if(np == 0)
-	PrecisionInfo(U, U_1, a, h, N);
-#endif
-
+		
         for (size_t j = 1; j < N; j++) {
 
 #ifdef SEQUENTIAL
@@ -211,14 +206,14 @@ if(np == 0)
 #endif
         }
         swap(U, U_1);
-#ifdef INFO
-if(np == 0)
-{
-	PrecisionInfo(U, U_1, a, h, N);
-	cout << endl;
-}
-#endif
+
     }
+	if(np == 0) {
+
+		cout << "Max error: "<<PrecisionInfo(U, U_1, a, h, N)<<endl;
+		cout << "Work time:" << MPI_Wtime()-tick << endl;
+		cout << endl;
+	}
 	MPI_Finalize();
     return 0;
 }

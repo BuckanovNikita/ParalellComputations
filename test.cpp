@@ -35,7 +35,7 @@ void BorderEqualityTest(vector<vector<double>> &U, vector<vector<double>> &U_1, 
     }
 }
 
-void PrecisionInfo(vector<vector<double>> &U, vector<vector<double>> &U_1, double a, double h, size_t N) {
+double PrecisionInfo(vector<vector<double>> &U, vector<vector<double>> &U_1, double a, double h, size_t N) {
     size_t max_i = 0;
     size_t max_j = 0;
     double diff = -2;
@@ -47,8 +47,9 @@ void PrecisionInfo(vector<vector<double>> &U, vector<vector<double>> &U_1, doubl
                 max_i = i;
                 max_j = j;
             }
-    cout << "Max error: " << diff << endl;
-    cout << "I:" << max_i << " J:" << max_j << endl;
+    //cout << "Max error: " << diff << endl;
+    //cout << "I:" << max_i << " J:" << max_j << endl;
+	return diff;
 }
 
 void TopTriangleCheck(const size_t &l, const size_t &r, const size_t &np,
@@ -95,4 +96,13 @@ void MatrixCheck(const size_t &l, const size_t &r, const size_t &np, const size_
         else
             assert(abs(L_V[r] * correct[l - 1] + B_V[r] * correct[r] - F_V[r]) < PRECISION);*/
     }
+}
+
+double DU(vector<vector<double>> &U, vector<vector<double>> &U_1, size_t N)
+{
+	double result = 0;
+	for(size_t i = 0; i<=N;i++)
+		for(size_t j = 0; j<=N; j++)
+			result = max(result, abs(U_1[i][j]-U[i][j]));
+	return result;	
 }
