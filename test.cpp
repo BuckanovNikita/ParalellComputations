@@ -37,7 +37,6 @@ void BorderEqualityTest(vector<vector<double>> &U, vector<vector<double>> &U_1, 
 
 double PrecisionInfo(vector<vector<double>> &U, vector<vector<double>> &U_1, double a, double h, size_t N) {
     double diff = -2;
-
     for (size_t i = 0; i <= N; i++)
         for (size_t j = 0; j <= N; j++)
             if (fabs(U[i][j] - solution(a + h * i, a + h * j)) > diff) {
