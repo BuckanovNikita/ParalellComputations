@@ -1,7 +1,3 @@
-//
-// Created by nikita on 15.01.2019.
-//
-
 #include "task.h"
 
 

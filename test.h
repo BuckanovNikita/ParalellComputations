@@ -49,6 +49,4 @@ void MatrixCheck(const size_t &l, const size_t &r, const size_t &np, const size_
                  const vector<double> &R_V,
                  const vector<double> &correct);
 
-double DU(vector<vector<double>> &U, vector<vector<double>> &U_1, size_t N);
-
 #endif //IMM_CPP_TEST_H

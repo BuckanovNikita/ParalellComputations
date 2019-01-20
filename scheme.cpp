@@ -1,7 +1,3 @@
-//
-// Created by nikita on 15.01.2019.
-//
-
 #include "scheme.h"
 
 double A_1(const size_t &i, const size_t &N, const double &a, const double &h, const double &tau) {

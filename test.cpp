@@ -36,20 +36,14 @@ void BorderEqualityTest(vector<vector<double>> &U, vector<vector<double>> &U_1, 
 }
 
 double PrecisionInfo(vector<vector<double>> &U, vector<vector<double>> &U_1, double a, double h, size_t N) {
-    size_t max_i = 0;
-    size_t max_j = 0;
     double diff = -2;
 
     for (size_t i = 0; i <= N; i++)
         for (size_t j = 0; j <= N; j++)
             if (fabs(U[i][j] - solution(a + h * i, a + h * j)) > diff) {
                 diff = fabs(U[i][j] - solution(a + h * i, a + h * j));
-                max_i = i;
-                max_j = j;
             }
-    //cout << "Max error: " << diff << endl;
-    //cout << "I:" << max_i << " J:" << max_j << endl;
-	return diff;
+    return diff;
 }
 
 void TopTriangleCheck(const size_t &l, const size_t &r, const size_t &np,
@@ -75,34 +69,15 @@ void MatrixCheck(const size_t &l, const size_t &r, const size_t &np, const size_
                  const vector<double> &F_V,
                  const vector<double> &R_V,
                  const vector<double> &correct) {
+
+    //TODO FIX ASSERTS ON BLOCKS BORDERS
     if (np == 0) {
         for (size_t i = l; i < r; i++)
             assert(abs(B_V[i] * correct[i]
                        + R_V[i] * correct[r] - F_V[i]) < PRECISION);
-        //assert(abs(B_V[r] * correct[r]
-         //          + R_V[r] * correct[min(r + (N + 1) / mp, N)] - F_V[r]) < PRECISION);
     } else {
         for (size_t i = l; i < r; i++)
             assert(abs(L_V[i] * correct[l - 1] + B_V[i] * correct[i]
                        + R_V[i] * correct[r] - F_V[i]) < PRECISION);
-
-        /*if (np != mp - 1) {
-            size_t tmp_r = r + (N + 1) / mp;
-            if(np == mp-2)
-                tmp_r = N;
-        assert(abs(L_V[r] * correct[l - 1] + B_V[r] * correct[r]
-                   + R_V[r] * correct[tmp_r] - F_V[r]) < PRECISION);
-        }
-        else
-            assert(abs(L_V[r] * correct[l - 1] + B_V[r] * correct[r] - F_V[r]) < PRECISION);*/
     }
-}
-
-double DU(vector<vector<double>> &U, vector<vector<double>> &U_1, size_t N)
-{
-	double result = 0;
-	for(size_t i = 0; i<=N;i++)
-		for(size_t j = 0; j<=N; j++)
-			result = max(result, abs(U_1[i][j]-U[i][j]));
-	return result;	
 }
