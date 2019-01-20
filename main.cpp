@@ -88,7 +88,7 @@ int main(int argc, char **argv) {
         if (np == 0) {
             cout << "Iteration: " << it << endl;
             cout << "Max error: " << PrecisionInfo(U, U_1, a, h, N) << endl;
-            cout << "Work time:" << MPI_Wtime() - tick << endl;
+            cout << "Work time: " << MPI_Wtime() - tick << endl;
             cout << endl;
         }
 #ifdef TEST
@@ -164,7 +164,7 @@ int main(int argc, char **argv) {
     if (np == 0) {
 
         cout << "Max error: " << PrecisionInfo(U, U_1, a, h, N) << endl;
-        cout << "Work time:" << MPI_Wtime() - tick << endl;
+        cout << "Work time: " << MPI_Wtime() - tick << endl;
         cout << endl;
     }
     MPI_Finalize();
