@@ -30,9 +30,9 @@ void DiagonalDominance(const size_t &N,
                        const function<double(size_t)> &C,
                        const function<double(size_t)> &F);
 
-void BorderEqualityTest(vector<vector<double>> &U, vector<vector<double>> &U_1, size_t N, double a, double h);
+void BorderEqualityTest(vector<vector<double>> &U, vector<vector<double>> &U_1, size_t N, double h);
 
-double PrecisionInfo(vector<vector<double>> &U, vector<vector<double>> &U_1, double a, double h, size_t N);
+double PrecisionInfo(vector<vector<double>> &U, vector<vector<double>> &U_1, double h, size_t N);
 
 void TopTriangleCheck(const size_t &l, const size_t &r, const size_t &np,
                       const vector<double> &L_V,

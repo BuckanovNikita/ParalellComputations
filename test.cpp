@@ -26,26 +26,22 @@ void ThomasSolutionTest(vector<double> &U,
     assert(fabs(A(N) * U[N - 1] - B(N) * U[N] + -F(N)) < PRECISION);
 }
 
-void BorderEqualityTest(vector<vector<double>> &U, vector<vector<double>> &U_1, size_t N, double a, double h) {
+void BorderEqualityTest(vector<vector<double>> &U, vector<vector<double>> &U_1, size_t N, double h) {
     for (size_t i = 0; i <= N; i++) {
-        assert(U[i][0] == u_x_1_0(a + h * i));
-        assert(U_1[i][0] == u_x_1_0(a + h * i));
-        assert(U[i][N] == u_x_1_1(a + h * i));
-        assert(U_1[i][N] == u_x_1_1(a + h * i));
+        assert(U[i][0] == u_x_1_0(h * i));
+        assert(U_1[i][0] == u_x_1_0(h * i));
+        assert(U[i][N] == u_x_1_1(h * i));
+        assert(U_1[i][N] == u_x_1_1(h * i));
     }
 }
 
-double PrecisionInfo(vector<vector<double>> &U, vector<vector<double>> &U_1, double a, double h, size_t N) {
-    size_t max_i = 0;
-    size_t max_j = 0;
+double PrecisionInfo(vector<vector<double>> &U, vector<vector<double>> &U_1, double h, size_t N) {
     double diff = -2;
 
     for (size_t i = 0; i <= N; i++)
         for (size_t j = 0; j <= N; j++)
-            if (fabs(U[i][j] - solution(a + h * i, a + h * j)) > diff) {
-                diff = fabs(U[i][j] - solution(a + h * i, a + h * j));
-                max_i = i;
-                max_j = j;
+            if (fabs(U[i][j] - solution(h * i, h * j)) > diff) {
+                diff = fabs(U[i][j] - solution(h * i, h * j));
             }
 	return diff;
 }
@@ -94,13 +90,4 @@ void MatrixCheck(const size_t &l, const size_t &r, const size_t &np, const size_
         else
             assert(abs(L_V[r] * correct[l - 1] + B_V[r] * correct[r] - F_V[r]) < PRECISION);*/
     }
-}
-
-double DU(vector<vector<double>> &U, vector<vector<double>> &U_1, size_t N)
-{
-	double result = 0;
-	for(size_t i = 0; i<=N;i++)
-		for(size_t j = 0; j<=N; j++)
-			result = max(result, abs(U_1[i][j]-U[i][j]));
-	return result;	
 }

@@ -28,7 +28,7 @@ CMAKE_COLOR_MAKEFILE:BOOL=ON
 CMAKE_CXX_COMPILER:FILEPATH=/usr/lib64/mpi/gcc/openmpi/bin/mpic++
 
 //Flags used by the compiler during all build types.
-CMAKE_CXX_FLAGS:STRING= -fopenmp
+CMAKE_CXX_FLAGS:STRING= -fopenmp -O3 -DNDEBUG
 
 //Flags used by the compiler during debug builds.
 CMAKE_CXX_FLAGS_DEBUG:STRING=-g
