@@ -6,7 +6,6 @@
 #include "omp.h"
 
 #define PRECISION 1e-8
-#define TEST
 #define MY_TAG 777
 
 vector<double> MPI_OMP_Solver(const size_t &N, 

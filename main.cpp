@@ -68,7 +68,11 @@ int main(int argc, char **argv) {
     }
 
     const double h = 1.0 / N;
-    const double tau = 1.0 / (M_PI * N);
+	double d1 = 16/1.01/(h*h)*sin(M_PI*h/2)*sin(M_PI*h/2);
+	double D1 = 1600/(h*h)*cos(M_PI*h/2)*cos(M_PI*h/2);
+	double d2 = 4/(h*h)*sin(M_PI*h/2)*sin(M_PI*h/2);
+	double D2 = 4/(h*h)*cos(M_PI*h/2)*cos(M_PI*h/2);
+    const double tau = 2/sqrt(min(d1,d2)*max(D1,D2));
 
     cout << "Grid size: " << N << endl;
 
